@@ -15,8 +15,11 @@
  *******************************************************************************/
 package org.gameontext.signed;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -32,7 +35,7 @@ public class SignedContainerRequestFilter implements ContainerRequestFilter {
     public SignedContainerRequestFilter(SignedRequestSecretProvider playerClient, SignedRequestTimedCache timedCache) {
         this.playerClient = playerClient;
         this.timedCache = timedCache;
-
+        
         if ( playerClient == null || timedCache == null ) {
             SignedRequestFeature.writeLog(Level.SEVERE, this,
                     "Required resources are not available: playerClient={0}, timedCache={1}",
@@ -60,13 +63,20 @@ public class SignedContainerRequestFilter implements ContainerRequestFilter {
                 requestContext.getUriInfo().getQueryParameters(false),
                 requestContext.getHeaders());
 
-        if ( userId == null ) {
+        if ( userId == null || userId.trim().isEmpty()) {
             if ( "GET".equals(method) ) {
                 // no validation required for GET requests. If an ID isn't provided,
                 // then we won't do validation and will just return.
                 SignedRequestFeature.writeLog(Level.FINEST, this, "FILTER: GET WITH NO ID-- NO VERIFICATION");
                 return;
             } else {
+                //debug empty userid header..
+                if(userId!=null){
+                    BufferedReader buffer = new BufferedReader(new InputStreamReader(requestContext.getEntityStream(), SignedRequestHmac.UTF8));
+                    String body = buffer.lines().collect(Collectors.joining("\n"));
+                    SignedRequestFeature.writeLog(Level.FINEST,this,"BODY: "+body);
+                }
+                
                 SignedRequestFeature.writeLog(Level.FINEST, this, "FILTER: "+method+" WITH NO ID-- UNAUTHORIZED");
                 // STOP!! turn this right around with the bad response
                 requestContext.abortWith(Response.status(Status.FORBIDDEN).build());
