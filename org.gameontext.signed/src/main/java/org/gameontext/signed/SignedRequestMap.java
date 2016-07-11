@@ -18,6 +18,7 @@ package org.gameontext.signed;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -46,7 +47,9 @@ public interface SignedRequestMap {
     public String getFirst(String key);
 
     public String getAll(String key, String defaultValue);
-
+    
+    public Set<String> keySet();
+    
 
     /**
      * Wrap around a MultivaluedMap<String, Object>
@@ -87,6 +90,11 @@ public interface SignedRequestMap {
         public String toString() {
             return mvso.toString();
         }
+
+        @Override
+        public Set<String> keySet() {
+            return mvso.keySet();
+        }
     }
 
     /**
@@ -126,6 +134,11 @@ public interface SignedRequestMap {
         @Override
         public String toString() {
             return mvss.toString();
+        }
+
+        @Override
+        public Set<String> keySet() {
+            return mvss.keySet();
         }
     }
 
@@ -182,6 +195,11 @@ public interface SignedRequestMap {
         public String toString() {
             return mvss.toString();
         }
+
+        @Override
+        public Set<String> keySet() {
+            return mvss.keySet();
+        }
     }
 
     /**
@@ -226,6 +244,11 @@ public interface SignedRequestMap {
         @Override
         public String toString() {
             return mls.toString();
+        }
+
+        @Override
+        public Set<String> keySet() {
+            return mls.keySet();
         }
     }
 }
