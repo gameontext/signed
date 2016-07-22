@@ -267,7 +267,30 @@ public class SignedRequestHmac {
 
             String h_hmac = buildHmac(stuffToHash);
             if ( !signature.equals(h_hmac) ) {
-                throw new WebApplicationException("Invalid signature (hmacCompare)", Status.FORBIDDEN);
+                //TEMPORARY:
+                //retry .. but add in the a8 service prefix.
+                String h_hmac2=null;
+                //is there a prefix?
+                if(baseUri.indexOf('/',1)!=-1){
+                    String prefix = baseUri.substring(0,Math.min(baseUri.indexOf('/', 1), baseUri.length()));
+                    Log.log(Level.INFO, this, "HashMismatch, retrying with a8 service prefix {0}",prefix);
+                    stuffToHash = new ArrayList<String>();
+                    if ( !oldStyle ) {
+                        stuffToHash.add(method);    // (1)
+                        stuffToHash.add(prefix+baseUri);   // (2)
+                    }
+                    stuffToHash.add(userId);        // (3)
+                    stuffToHash.add(dateString);    // (4)
+                    stuffToHash.add(sigHeaders);    // (5)
+                    stuffToHash.add(sigParameters); // (6)
+                    stuffToHash.add(sigBody);       // (7)
+                    
+                    h_hmac2 = buildHmac(stuffToHash);
+                }
+                
+                if ( h_hmac2==null || !signature.equals(h_hmac2) ) {
+                    throw new WebApplicationException("Invalid signature (hmacCompare)", Status.FORBIDDEN);
+                }
             }
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException e) {
             throw new WebApplicationException("Invalid signature", Status.FORBIDDEN);
