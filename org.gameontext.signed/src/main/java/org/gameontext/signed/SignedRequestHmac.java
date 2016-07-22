@@ -87,7 +87,7 @@ public class SignedRequestHmac {
 
     /**
      * Read gameon-* header values
-     * @param headers
+     * @param headers Map of request or response headers
      * @return this
      */
     public SignedRequestHmac checkHeaders(SignedRequestMap headers) {
@@ -111,7 +111,7 @@ public class SignedRequestHmac {
      * Check signature against recently seen signatures to guard against
      * replay attacks.
      *
-     * @param timedCache
+     * @param timedCache Timed cache instance containing recently seen signatures
      * @return this
      */
     public SignedRequestHmac checkDuplicate(SignedRequestTimedCache timedCache) throws WebApplicationException {
@@ -168,9 +168,9 @@ public class SignedRequestHmac {
      * @param headers Request headers: will be modified if headers or query
      *      parameters are named for inclusion in the signature
      * @param header_names Names of headers to include in hash
-     * @param parameters Query parameters
+     * @param query_parameters Query parameters
      * @param parameter_names Names of query parameters to include in hash
-     * @throws WebApplicationException
+     * @throws WebApplicationException if an exception occurs generating hashes
      * @return this
      */
     public SignedRequestHmac generateRequestHeaderHashes(SignedRequestMap headers,
@@ -189,7 +189,7 @@ public class SignedRequestHmac {
             }
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             // this is our fault.
-            throw new WebApplicationException("Unable to generate signature", Status.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException("Unable to generate hash", Status.INTERNAL_SERVER_ERROR);
         }
         return this;
     }
@@ -203,9 +203,8 @@ public class SignedRequestHmac {
 
     /**
      * Given body bytes, verify the hashed header matches the expected value
-     * @param body
-     * @throws NoSuchAlgorithmException
-     * @throws UnsupportedEncodingException
+     * @param body Message body bytes
+     * @throws WebApplicationException if an exception occurs generating the HMAC signature
      * @return this
      */
     public SignedRequestHmac verifyBodyHash(byte[] body) {
@@ -222,7 +221,7 @@ public class SignedRequestHmac {
                 throw new WebApplicationException("Invalid signature (bodyHash)", Status.FORBIDDEN);
             }
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            throw new WebApplicationException("Invalid signature", Status.FORBIDDEN);
+            throw new WebApplicationException("Unable to generate hash", Status.FORBIDDEN);
         }
 
         return this;
@@ -231,9 +230,9 @@ public class SignedRequestHmac {
     /**
      * Generate the ameon-sig-body header with a hash of the message body
      *
+     * @param headers Message headers: will be modified to add hash for message body
      * @param body Message body bytes
-     * @throws UnsupportedEncodingException
-     * @throws NoSuchAlgorithmException
+     * @throws WebApplicationException if an exception occurs generating hashes
      * @return this
      */
     public SignedRequestHmac generateBodyHash(SignedRequestMap headers, byte[] body) {
@@ -241,7 +240,7 @@ public class SignedRequestHmac {
             sigBody = buildHash(body);
             headers.putSingle(GAMEON_SIG_BODY, sigBody);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            throw new WebApplicationException("Invalid signature", Status.FORBIDDEN);
+            throw new WebApplicationException("Unable to generate hash", Status.FORBIDDEN);
         }
         return this;
     }
@@ -250,6 +249,8 @@ public class SignedRequestHmac {
      * Verify that the gameon-signature header matches the hashed value of
      * all of the signature elements(7):  method, baseUri, userId,
      * dateString, sigHeaders, sigParameters, sigBody
+     * @throws WebApplicationException if an exception occurs generating hashes
+     * @return this
      */
     public SignedRequestHmac verifyFullSignature() {
         try {
@@ -278,9 +279,11 @@ public class SignedRequestHmac {
 
     /**
      * Set to the old-style date, based on the toString of Instant
-     * @param instant
+     * @param instant java.time.Instant to convert into the dateString
      * @return this
+     * @deprecated
      */
+    @Deprecated
     public SignedRequestHmac setOldStyleDate(Instant instant) {
         this.date = instant;
         this.dateString = instant.toString();
@@ -290,7 +293,7 @@ public class SignedRequestHmac {
 
     /**
      * Set to a fixed/previously known date string
-     * @param dateString
+     * @param dateString DateTimeFormatter.RFC_1123_DATE_TIME date string, e.g. 'Tue, 3 Jun 2008 11:05:30 GMT'
      * @return this
      */
     public SignedRequestHmac setDate(String dateString) {
@@ -313,7 +316,9 @@ public class SignedRequestHmac {
 
     /**
      * Generate the gameon-signature, gameon-id, and gameon-date headers.
-     * @param headers
+     * @param headers Message headers: will be modified to add gameon-signature with generated hash
+     * @throws WebApplicationException if an exception occurs generating the HMAC signature
+     * @return this
      */
     public SignedRequestHmac signRequest(SignedRequestMap headers) {
 
@@ -349,6 +354,9 @@ public class SignedRequestHmac {
         return this;
     }
 
+    /**
+     * @return gameon-signature hash value
+     */
     public String getSignature() {
         return signature;
     }
@@ -360,8 +368,9 @@ public class SignedRequestHmac {
      * This will set new date/signature values into new headers based on
      * previously read/calculated values.
      *
-     * @param headers
-     * @return
+     * @param headers Message headers: will be modified to add gameon-date and gameon-signature
+     * @throws WebApplicationException if an exception occurs generating the HMAC signature
+     * @return this
      */
     public SignedRequestHmac wsResignRequest(SignedRequestMap headers) {
         if ( signature == null )
@@ -391,9 +400,20 @@ public class SignedRequestHmac {
     }
 
 
+    /**
+     * For the WebSocket protocol handshake, the server (a room) takes the previous
+     * signature value, and combines that with a new date to create a new signature.
+     *
+     * This will set new date/signature values into new headers based on
+     * previously read/calculated values.
+     *
+     * @param headers Message headers
+     * @return this
+     */
     public SignedRequestHmac wsVerifySignature(SignedRequestMap headers) {
-        if ( signature == null )
+        if ( signature == null ) {
             throw new NullPointerException("Must have a previous signature to verify with");
+        }
 
         try {
             List<String> stuffToHash = new ArrayList<String>();

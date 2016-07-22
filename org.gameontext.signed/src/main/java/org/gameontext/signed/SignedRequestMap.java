@@ -28,9 +28,9 @@ import javax.ws.rs.core.MultivaluedMap;
  * casting craziness.
  *
  * <ul>
- *   <li>JAX-RS ClientRequestContext#getHeaders() uses <code>MultivaluedMap<String, Object</code>
- *   <li>JAX-RS ContainerRequestContext#getHeaders() uses <code>MultivaluedMap<String, Object</code>
- *   <li>WebSockets HeaderRequest#getHeaders() uses <code>Map<String, List<String>></code>
+ *   <li>JAX-RS ClientRequestContext#getHeaders() uses {@code MultivaluedMap<String, Object>}
+ *   <li>JAX-RS ContainerRequestContext#getHeaders() uses {@code MultivaluedMap<String, Object>}
+ *   <li>WebSockets HeaderRequest#getHeaders() uses {@code Map<String, List<String>>}
  * </ul>
  *
  * This is a simple collection of wrappers with a common interface that does
@@ -47,12 +47,12 @@ public interface SignedRequestMap {
     public String getFirst(String key);
 
     public String getAll(String key, String defaultValue);
-    
+
     public Set<String> keySet();
-    
+
 
     /**
-     * Wrap around a MultivaluedMap<String, Object>
+     * Wrap around a {@code MultivaluedMap<String, Object>}
      */
     static class MVSO_StringMap implements SignedRequestMap {
 
@@ -98,7 +98,7 @@ public interface SignedRequestMap {
     }
 
     /**
-     * Wrap around a MultivaluedMap<String, String>
+     * Wrap around a {@code MultivaluedMap<String, String>}
      */
     static class MVSS_StringMap implements SignedRequestMap {
 
@@ -142,6 +142,9 @@ public interface SignedRequestMap {
         }
     }
 
+    /**
+     * Wrap around a query parameter string
+     */
     static class QueryParameterMap implements SignedRequestMap {
         final String queryString;
         MVSS_StringMap mvss = null;
@@ -203,7 +206,7 @@ public interface SignedRequestMap {
     }
 
     /**
-     * Wrap around a MultivaluedMap<String, String>
+     * Wrap around a {@code MultivaluedMap<String, String>}
      */
     static class MLS_StringMap implements SignedRequestMap {
 

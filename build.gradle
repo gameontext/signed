@@ -1,6 +1,6 @@
 allprojects {
-    group = 'org.gameon'
-    version = '1.0.1'
+    group = 'org.gameontext'
+    version = '1.0.2'
 
     repositories {
         mavenCentral()

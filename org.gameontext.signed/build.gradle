@@ -11,6 +11,29 @@ dependencies {
 	compile 'io.jsonwebtoken:jjwt:0.5.1'
 }
 
+jar {
+    baseName 'org.gameontext.signed'
+}
+
+javadoc {
+    options.memberLevel = JavadocMemberLevel.PUBLIC
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
 eclipse.wtp.facet {
     // Clear default facets to work around bug where you get duplicates including wst 2.4
     facets = []
@@ -27,4 +50,3 @@ eclipse.jdt.file {
       it['org.eclipse.jdt.core.formatter.indent_switchstatements_compare_to_switch'] = 'true'
     }
 }
-

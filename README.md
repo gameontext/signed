@@ -8,7 +8,7 @@ signing and verifying requests that use JWTs or HMACs
 We use jitpack to build this library, which means you can direct maven or gradle directly to our github releases to satisfy dependencies.
 
 1. include jitpack.io in your list of repositories:
-  * In maven: 
+  * In maven:
   ```
     <repositories>
       <repository>
@@ -17,14 +17,22 @@ We use jitpack to build this library, which means you can direct maven or gradle
       </repository>
     </repositories>
   ```
-  * In gradle: 
+  * In gradle:
   ```
     repositories {
       maven { url "https://jitpack.io" }
     }
   ```
-2. Include version of the library in your dependencies: 
-  * In gradle: 
+2. Include version of the library in your dependencies:
+  * In maven:
+  ```
+    <dependency>
+      <groupId>com.github.gameontext</groupId>
+      <artifactId>signed</artifactId>
+      <version>v1.0.2</version>
+    </dependency>
+  ```
+  * In gradle:
   ```
     dependencies {
 	    compile 'com.github.gameontext:signed:v1.0.2'
@@ -38,5 +46,3 @@ We use jitpack to build this library, which means you can direct maven or gradle
     SignedClientRequestFilter apikeyFilter = new SignedClientRequestFilter(userid, secret);
     client.register(apikeyFilter);
   ```
-
-

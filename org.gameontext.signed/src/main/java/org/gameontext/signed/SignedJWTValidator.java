@@ -54,10 +54,7 @@ public class SignedJWTValidator {
 
     /**
      * Obtain the key we'll use to sign the jwts we issue.
-     *
-     * @throws IOException
-     *             if there are any issues with the keystore processing.
-     */
+    */
     @PostConstruct
     protected void getKeyStoreInfo() {
         try {
