@@ -1,11 +1,17 @@
 apply plugin: 'java'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'maven'
+apply plugin: 'jacoco'
 
 group = 'com.github.gameontext'
 version = '1.0.3'
 
 sourceCompatibility = 1.8
+
+configurations {
+    jmockit
+    testCompile.extendsFrom jmockit
+}
 
 repositories {
     mavenCentral()
@@ -17,6 +23,9 @@ dependencies {
     compile 'javax.servlet:javax.servlet-api:3.1.0'
     compile 'javax.enterprise.concurrent:javax.enterprise.concurrent-api:1.0'
     compile 'io.jsonwebtoken:jjwt:0.5.1'
+
+    jmockit 'org.jmockit:jmockit:1.22'
+    testCompile 'junit:junit:4.12'
 }
 
 jar {
@@ -25,6 +34,14 @@ jar {
 
 javadoc {
     options.memberLevel = JavadocMemberLevel.PUBLIC
+}
+
+test {
+   jvmArgs "-javaagent:${configurations.jmockit.singleFile.absolutePath}"
+
+   jacoco {
+     excludes = ["*\$Impl_*"]
+   }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -57,6 +74,19 @@ install {
       }
     }
   }
+}
+
+// Keep test and application binaries separate
+eclipse.classpath.file {
+    withXml { xml ->
+        def node = xml.asNode()
+
+        Node src = node.find {it.@path == "src/main/java"}
+        src.@output ="bin/main"
+
+        Node testSrc = node.find {it.@path == "src/test/java"}
+        testSrc.@output ="bin/test"
+    }
 }
 
 eclipse.wtp.facet {
