@@ -27,6 +27,14 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+/**
+ * The server-side of signed request processing (the Map service uses this, for example).
+ *
+ * Note you won't find many direct references to this class, because it the {@link SignedRequestFeature}
+ * registers this filter for methods using the {@link SignedRequest} annotation.
+ *
+ * @see SignedRequestFeature#configure(javax.ws.rs.container.ResourceInfo, javax.ws.rs.core.FeatureContext)
+ */
 public class SignedContainerRequestFilter implements ContainerRequestFilter {
 
     private final SignedRequestSecretProvider playerClient;
@@ -35,7 +43,7 @@ public class SignedContainerRequestFilter implements ContainerRequestFilter {
     public SignedContainerRequestFilter(SignedRequestSecretProvider playerClient, SignedRequestTimedCache timedCache) {
         this.playerClient = playerClient;
         this.timedCache = timedCache;
-        
+
         if ( playerClient == null || timedCache == null ) {
             SignedRequestFeature.writeLog(Level.SEVERE, this,
                     "Required resources are not available: playerClient={0}, timedCache={1}",
@@ -44,10 +52,21 @@ public class SignedContainerRequestFilter implements ContainerRequestFilter {
         }
     }
 
-    /* (non-Javadoc)
+    /**
+     * Reads the headers/method of the inbound request. If the request is signed, we will perform the steps
+     * to validate the signature (unless there is a message body, in which case we save the {@link SignedRequestHmac}
+     * and finish verifying the signature after the message body has been read).
+     *
+     * A signature is not required for GET requests. If a GET request is signed, we will validate the signature.
+     * This can be used, for example, to share more information with the owner of a resource than you would
+     * with the casual viewer.
+     *
+     * If a signature is present and is invalid, the request will be refused as {@link Status#FORBIDDEN}.
+     *
      * @see javax.ws.rs.container.ContainerRequestFilter#filter(javax.ws.rs.container.ContainerRequestContext)
      * @see SignedReaderInterceptor
      * @see SignedRequestFeature
+     * @see SignedRequestHmac
      */
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -76,7 +95,7 @@ public class SignedContainerRequestFilter implements ContainerRequestFilter {
                     String body = buffer.lines().collect(Collectors.joining("\n"));
                     SignedRequestFeature.writeLog(Level.FINEST,this,"BODY: "+body);
                 }
-                
+
                 SignedRequestFeature.writeLog(Level.FINEST, this, "FILTER: "+method+" WITH NO ID-- UNAUTHORIZED");
                 // STOP!! turn this right around with the bad response
                 requestContext.abortWith(Response.status(Status.FORBIDDEN).build());

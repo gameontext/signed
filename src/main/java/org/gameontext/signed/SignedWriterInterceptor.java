@@ -29,6 +29,13 @@ public class SignedWriterInterceptor implements WriterInterceptor {
     public SignedWriterInterceptor() {
     }
 
+    /**
+     * If there is a saved/pending outbound request hmac, capture the outgoing message body.
+     * Generate a hash of the outgoing bytes as part of the HMAC signature,
+     * create the HMAC signature and add it to the message headers.
+     *
+     * @see javax.ws.rs.ext.WriterInterceptor#aroundWriteTo(javax.ws.rs.ext.WriterInterceptorContext)
+     */
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         SignedRequestHmac hmac = (SignedRequestHmac) context.getProperty("SignedRequestHmac");

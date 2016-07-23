@@ -26,6 +26,26 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 
+/**
+ * ClientRequestFilter and WriteInterceptor.
+ *
+ * Add this to a JAX-RS 2.0 outbound client, and it will perform the
+ * required to sign an outbound REST request.
+ *
+ * Usage is something like this:
+ * <pre>
+ *   Client client = ClientBuilder.newClient().register(JsonProvider.class);
+ *
+ *   SignedClientRequestFilter signedReq = new SignedClientRequestFilter(userid, secret);
+ *   client.register(signedReq);
+ *
+ *   WebTarget target = client.target(mapLocation).resolveTemplate("roomId", roomId).path("{roomId}");
+ * </pre>
+ *
+ * @see SignedRequestHmac
+ * @see #filter(ClientRequestContext)
+ * @see SignedWriterInterceptor#aroundWriteTo(WriterInterceptorContext)
+ */
 public class SignedClientRequestFilter implements ClientRequestFilter, WriterInterceptor {
 
     final String userId;
@@ -52,6 +72,16 @@ public class SignedClientRequestFilter implements ClientRequestFilter, WriterInt
         this.parameter_names = parameter_names;
     }
 
+    /**
+     * Called as part of the outbound request's filter chain. This creates a {@link SignedRequestHmac}
+     * for this request, and uses it to set Game On specific request headers.
+     *
+     * If there is an entity (a body), this method will save the {@link SignedRequestHmac} in the
+     * request context, and the {@link SignedWriterInterceptor} will sign the request after we have the
+     * entity body bytes.
+     *
+     * If there is no body, this method will generate the hmac signature and set the appropriate header.
+     */
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         WebApplicationException invalidHmacEx = null;
