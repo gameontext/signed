@@ -273,7 +273,7 @@ public class SignedRequestHmac {
                 //is there a prefix?
                 if(baseUri.indexOf('/',1)!=-1){
                     String prefix = baseUri.substring(0,Math.min(baseUri.indexOf('/', 1), baseUri.length()));
-                    Log.log(Level.INFO, this, "HashMismatch, retrying with a8 service prefix {0}",prefix);
+                    //Log.log(Level.INFO, this, "HashMismatch, retrying with a8 service prefix {0}",prefix);
                     stuffToHash = new ArrayList<String>();
                     if ( !oldStyle ) {
                         stuffToHash.add(method);    // (1)
