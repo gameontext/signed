@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.gameontext.signed;
 
+/**
+ * To validate signatures, we need to find secrets.
+ * Each service will be finding its way to shared secrets by different means...
+ */
 public interface SignedRequestSecretProvider {
 
     String getSecretForId(String userId);
