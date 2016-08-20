@@ -39,7 +39,7 @@ We use jitpack to build this library, which means you can direct maven or gradle
     }
   ```
 3. Use SignedRequest* utilities to handle request signing
-4. 
+
   * SignedRequestFilter with JAX-RS 2.0 client:
   ```
     Client client = ClientBuilder.newClient().register(JsonProvider.class);
@@ -50,15 +50,26 @@ We use jitpack to build this library, which means you can direct maven or gradle
   
   * Room-side of WebSocket Handshake via ServerEndpointConfig.Configurator 
   ```
-  public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
-    // Use websocket endpoint URL and shared secret
-    SignedRequestHmac wsHmac = new SignedRequestHmac("", secret, "", request.getRequestURI().getRawPath());
-  
-    // Before request, verify full signature (map provided request headers to an understood type)
-    wsHmac.checkHeaders(new SignedRequestMap.MLS_StringMap(request.getHeaders)))
-        .verifyFullSignature();
+        public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
+            super.modifyHandshake(sec, request, response);
 
-    // Use received signature, new date to create a new signing signature
-    wsHmac.wsResignRequest(new SignedRequestMap.MLS_StringMap(response.getHeaders()));
-  }
+            if ( token == null || token.isEmpty() ) {
+                Log.log(Level.FINEST, this, "No token set for room, skipping validation");
+            } else {
+                Log.log(Level.FINEST, this, "Validating WS handshake");
+                SignedRequestHmac wsHmac = new SignedRequestHmac("", token, "", request.getRequestURI().getRawPath());
+
+                try {
+                    wsHmac.checkHeaders(new SignedRequestMap.MLS_StringMap(request.getHeaders()))
+                            .verifyFullSignature()
+                            .wsResignRequest(new SignedRequestMap.MLS_StringMap(response.getHeaders()));
+
+                    Log.log(Level.INFO, this, "validated and resigned", wsHmac);
+                } catch(Exception e) {
+                    Log.log(Level.WARNING, this, "Failed to validate HMAC, unable to establish connection", e);
+
+                    response.getHeaders().replace(HandshakeResponse.SEC_WEBSOCKET_ACCEPT, Collections.emptyList());
+                }
+            }
+        }
   ```
