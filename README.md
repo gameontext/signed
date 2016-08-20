@@ -39,10 +39,26 @@ We use jitpack to build this library, which means you can direct maven or gradle
     }
   ```
 3. Use SignedRequest* utilities to handle request signing
+4. 
   * SignedRequestFilter with JAX-RS 2.0 client:
   ```
     Client client = ClientBuilder.newClient().register(JsonProvider.class);
 
     SignedClientRequestFilter apikeyFilter = new SignedClientRequestFilter(userid, secret);
     client.register(apikeyFilter);
+  ```
+  
+  * Room-side of WebSocket Handshake via ServerEndpointConfig.Configurator 
+  ```
+  public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
+    // Use websocket endpoint URL and shared secret
+    SignedRequestHmac wsHmac = new SignedRequestHmac("", secret, "", request.getRequestURI().getRawPath());
+  
+    // Before request, verify full signature (map provided request headers to an understood type)
+    wsHmac.checkHeaders(new SignedRequestMap.MLS_StringMap(request.getHeaders)))
+        .verifyFullSignature();
+
+    // Use received signature, new date to create a new signing signature
+    wsHmac.wsResignRequest(new SignedRequestMap.MLS_StringMap(response.getHeaders()));
+  }
   ```
