@@ -58,12 +58,8 @@ public class SignedRequestFeature implements DynamicFeature {
     @Override
     public void configure(ResourceInfo resourceInfo, FeatureContext context) {
         SignedRequest sr = resourceInfo.getResourceMethod().getAnnotation(SignedRequest.class);
-        if ( sr == null ) {
-            sr = resourceInfo.getResourceClass().getAnnotation(SignedRequest.class);
-        }
         if ( sr == null )
             return;
-
 
         context.register(new SignedContainerRequestFilter(playerClient, timedCache));
 
