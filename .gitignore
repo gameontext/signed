@@ -6,3 +6,4 @@ gradle-app.setting
 .gradletasknamecache
 build/
 bin/
+/.DS_Store

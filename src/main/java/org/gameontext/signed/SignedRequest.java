@@ -24,6 +24,6 @@ import java.lang.annotation.Target;
  * Method-level annotations for methods that use a signed
  * request.
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target(ElementType.METHOD)
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface SignedRequest { }
