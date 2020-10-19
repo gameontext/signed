@@ -29,7 +29,7 @@ We use jitpack to build this library, which means you can direct maven or gradle
   * In maven:
   ```
     <dependency>
-      <groupId>com.github.gameontext</groupId>
+      <groupId>org.gameontext</groupId>
       <artifactId>signed</artifactId>
       <version>v1.0.4</version>
     </dependency>
@@ -37,7 +37,7 @@ We use jitpack to build this library, which means you can direct maven or gradle
   * In gradle:
   ```
     dependencies {
-	    compile 'com.github.gameontext:signed:v1.0.4'
+	    compile 'org.gameontext:signed:v1.0.4'
     }
   ```
 3. Use SignedRequest* utilities to handle request signing
