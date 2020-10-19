@@ -29,13 +29,13 @@ We use jitpack to build this library, which means you can direct maven or gradle
     <dependency>
       <groupId>com.github.gameontext</groupId>
       <artifactId>signed</artifactId>
-      <version>v1.0.3</version>
+      <version>v1.0.4</version>
     </dependency>
   ```
   * In gradle:
   ```
     dependencies {
-	    compile 'com.github.gameontext:signed:v1.0.3'
+	    compile 'com.github.gameontext:signed:v1.0.4'
     }
   ```
 3. Use SignedRequest* utilities to handle request signing
@@ -47,8 +47,8 @@ We use jitpack to build this library, which means you can direct maven or gradle
     SignedClientRequestFilter apikeyFilter = new SignedClientRequestFilter(userid, secret);
     client.register(apikeyFilter);
   ```
-  
-  * Room-side of WebSocket Handshake via ServerEndpointConfig.Configurator 
+
+  * Room-side of WebSocket Handshake via ServerEndpointConfig.Configurator
   ```
         public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
             super.modifyHandshake(sec, request, response);
